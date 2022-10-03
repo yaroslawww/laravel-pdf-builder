@@ -103,6 +103,16 @@ class UserCertificate extends AbstractDocumentFromImage
 }
 ```
 
+### Code usage
+
+```php
+class CertificateController extends \App\Http\Controllers\Controller {
+    function showCertificate(\Illuminate\Http\Request $request) {
+        return (new UserCertificate($request->user))->inline();
+    }
+}
+```
+
 ## Credits
 
 - [![Think Studio](https://yaroslawww.github.io/images/sponsors/packages/logo-think-studio.png)](https://think.studio/) 
