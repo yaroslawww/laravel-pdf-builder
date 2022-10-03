@@ -1,6 +1,6 @@
 {
     "name": "yaroslawww/laravel-pdf-builder",
-    "description": "Wrapper for qrcode functionality.",
+    "description": "Wrapper for snappy and fpdi pdf generators.",
     "keywords": [
         "laravel",
         "qrcode"
