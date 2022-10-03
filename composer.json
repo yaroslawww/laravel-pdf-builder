@@ -1,0 +1,60 @@
+{
+    "name": "yaroslawww/laravel-pdf-builder",
+    "description": "Wrapper for qrcode functionality.",
+    "keywords": [
+        "laravel",
+        "qrcode"
+    ],
+    "homepage": "https://github.com/yaroslawww/laravel-pdf-builder",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Yaroslav Georgitsa",
+            "email": "yaroslav.georgitsa@gmail.com",
+            "homepage": "https://github.com/yaroslawww",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "illuminate/support": "^9.0",
+        "barryvdh/laravel-snappy": "^1.0",
+        "setasign/fpdf": "^1.8",
+        "setasign/fpdi": "^2.3"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.11",
+        "orchestra/testbench": "^7.7",
+        "phpunit/phpunit": "^9.5",
+        "psalm/plugin-laravel": "^2.0",
+        "vimeo/psalm": "^4.27"
+    },
+    "autoload": {
+        "psr-4": {
+            "LPDFBuilder\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "LPDFBuilder\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit --stop-on-failure",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage",
+        "format": "vendor/bin/php-cs-fixer fix --allow-risky=yes",
+        "psalm": "vendor/bin/psalm"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "LPDFBuilder\\ServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
