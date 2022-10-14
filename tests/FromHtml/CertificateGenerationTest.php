@@ -10,6 +10,14 @@ use LPDFBuilder\Tests\TestCase;
 
 class CertificateGenerationTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        if (!file_exists('/usr/local/bin/wkhtmltopdf')) {
+            $this->markTestSkipped('/usr/local/bin/wkhtmltopdf not exists');
+        }
+    }
+
     /** @test */
     public function inline_return_response()
     {
@@ -45,7 +53,7 @@ class CertificateGenerationTest extends TestCase
     {
         $path = (new CertificateFromHtml())->temporalFile('foo-bar');
 
-        $this->assertStringStartsWith(sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'foo-bar', $path);
+        $this->assertStringStartsWith(sys_get_temp_dir().DIRECTORY_SEPARATOR.'foo-bar', $path);
     }
 
     /** @test */
