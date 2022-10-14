@@ -12,8 +12,12 @@ abstract class AbstractDocumentFromImage implements DocumentGenerator
 {
     protected string $fileExtension = 'pdf';
 
-    public function extension(string $fileExtension = 'pdf'): static
+    public function extension(string|Extension $fileExtension = 'pdf'): static
     {
+        if ($fileExtension instanceof Extension) {
+            $fileExtension = $fileExtension->value;
+        }
+
         if ($fileExtension !== Extension::PDF->value) {
             throw new \Exception('Supports only pdf extension');
         }
@@ -21,8 +25,16 @@ abstract class AbstractDocumentFromImage implements DocumentGenerator
         return $this;
     }
 
-    public function generateName(): string
+    public function generateName(?string $defaultName = null): string
     {
+        if ($defaultName) {
+            if (Str::endsWith($defaultName, ".{$this->fileExtension}")) {
+                $defaultName = Str::beforeLast($defaultName, ".{$this->fileExtension}");
+            }
+
+            return $defaultName.'.'.$this->fileExtension;
+        }
+
         return Str::random().'.'.$this->fileExtension;
     }
 
@@ -31,31 +43,31 @@ abstract class AbstractDocumentFromImage implements DocumentGenerator
         return null;
     }
 
-    public function temporalFile(?string $name = null): ?string
+    public function temporalFile(?string $filename = null): ?string
     {
         $filePath = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR)
                     .DIRECTORY_SEPARATOR
-                    .ltrim(($name ?: $this->generateName()), DIRECTORY_SEPARATOR);
+                    .ltrim($this->generateName($filename), DIRECTORY_SEPARATOR);
         $this->generate()->Output('F', $filePath);
 
         return $filePath;
     }
 
-    public function inline(string $name = 'certificate'): Response
+    public function inline(?string $filename = null): Response
     {
         return new Response($this->generate()->Output('S'), 200, [
             'Content-Type'        => 'application/pdf',
-            'Content-Disposition' => "inline; {$this->generateName()}",
+            'Content-Disposition' => 'inline; filename="'.Str::afterLast($this->generateName($filename), DIRECTORY_SEPARATOR).'"',
             'Cache-Control'       => 'private, max-age=0, must-revalidate',
             'Pragma'              => 'public',
         ]);
     }
 
-    public function download(string $name = 'certificate'): Response
+    public function download(?string $filename = null): Response
     {
         return new Response($this->generate()->Output('S'), 200, [
             'Content-Type'        => 'application/pdf',
-            'Content-Disposition' => "attachment; filename=\"{$this->generateName()}\"",
+            'Content-Disposition' => 'attachment; filename="'.Str::afterLast($this->generateName($filename), DIRECTORY_SEPARATOR).'"',
             'Cache-Control'       => 'private, max-age=0, must-revalidate',
             'Pragma'              => 'public',
         ]);
@@ -63,7 +75,7 @@ abstract class AbstractDocumentFromImage implements DocumentGenerator
 
     public function save(?string $disc = null, ?string $filename = null, bool $overwrite = false, array $options = []): static
     {
-        $filename = $filename ?: $this->generateName();
+        $filename = $this->generateName($filename);
         $storage  = Storage::disk($disc);
         if (!$overwrite && $storage->exists($filename)) {
             // tangled with snappy, maybe good to create internal own exception?

@@ -5,8 +5,10 @@ namespace LPDFBuilder\Generation;
 use Barryvdh\Snappy\Facades\SnappyImage;
 use Barryvdh\Snappy\Facades\SnappyPdf;
 use Illuminate\Http\Response;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Str;
 
 abstract class AbstractDocumentFromHtml implements DocumentGenerator
 {
@@ -27,8 +29,11 @@ abstract class AbstractDocumentFromHtml implements DocumentGenerator
     /**
      * @inheritDoc
      */
-    public function extension(string $fileExtension = 'pdf'): static
+    public function extension(string|Extension $fileExtension = 'pdf'): static
     {
+        if ($fileExtension instanceof Extension) {
+            $fileExtension = $fileExtension->value;
+        }
         if (!in_array($fileExtension, $this->possibleExtensions())) {
             throw new \Exception('Not valid extension. Allowed: '.implode(', ', $this->possibleExtensions()));
         }
@@ -75,11 +80,14 @@ abstract class AbstractDocumentFromHtml implements DocumentGenerator
             default               => SnappyPdf::loadView($this->viewName(), $this->viewData()),
         };
 
-        if ($headerViewName = $this->headerViewName()) {
-            $file->setOption('header-html', view($headerViewName, $this->viewData())->render());
-        }
-        if ($footerViewName = $this->footerViewName()) {
-            $file->setOption('footer-html', view($footerViewName, $this->viewData())->render());
+        try {
+            if ($headerViewName = $this->headerViewName()) {
+                $file->setOption('header-html', view($headerViewName, $this->viewData())->render());
+            }
+            if ($footerViewName = $this->footerViewName()) {
+                $file->setOption('footer-html', view($footerViewName, $this->viewData())->render());
+            }
+        } catch (\InvalidArgumentException) {
         }
 
         return $file;
@@ -88,11 +96,11 @@ abstract class AbstractDocumentFromHtml implements DocumentGenerator
     /**
      * @inheritDoc
      */
-    public function temporalFile(?string $name = null): ?string
+    public function temporalFile(?string $filename = null): ?string
     {
         $filePath = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR)
                     .DIRECTORY_SEPARATOR
-                    .ltrim(($name ?: $this->generateName()), DIRECTORY_SEPARATOR);
+                    .ltrim($this->generateName($filename), DIRECTORY_SEPARATOR);
         $this->file()->save($filePath, true);
 
         return $filePath;
@@ -101,17 +109,17 @@ abstract class AbstractDocumentFromHtml implements DocumentGenerator
     /**
      * @inheritDoc
      */
-    public function inline(string $name = 'certificate'): Response
+    public function inline(?string $filename = null): Response
     {
-        return $this->file()->inline("{$name}.{$this->fileExtension}");
+        return $this->file()->inline(Str::afterLast($this->generateName($filename), DIRECTORY_SEPARATOR));
     }
 
     /**
      * @inheritDoc
      */
-    public function download(string $name = 'certificate'): Response
+    public function download(?string $filename = null): Response
     {
-        return $this->file()->download("{$name}.{$this->fileExtension}");
+        return $this->file()->download(Str::afterLast($this->generateName($filename), DIRECTORY_SEPARATOR));
     }
 
     /**
@@ -120,7 +128,7 @@ abstract class AbstractDocumentFromHtml implements DocumentGenerator
     public function save(?string $disc = null, ?string $filename = null, $overwrite = false, array $options = []): static
     {
         $storage = Storage::disk($disc);
-        $this->file()->save($storage->path($filename ?: $this->generateName()), $overwrite);
+        $this->file()->save($storage->path($this->generateName($filename)), $overwrite);
 
         return $this;
     }
@@ -128,8 +136,16 @@ abstract class AbstractDocumentFromHtml implements DocumentGenerator
     /**
      * @inheritDoc
      */
-    public function generateName(): string
+    public function generateName(?string $defaultName = null): string
     {
-        return "{$this->certificateData?->uuid}.{$this->fileExtension}";
+        if ($defaultName) {
+            if (Str::endsWith($defaultName, ".{$this->fileExtension}")) {
+                $defaultName = Str::beforeLast($defaultName, ".{$this->fileExtension}");
+            }
+
+            return $defaultName.'.'.$this->fileExtension;
+        }
+
+        return Arr::get($this->certificateData, 'uuid', Arr::get($this->certificateData, 'id', Str::random())).".{$this->fileExtension}";
     }
 }

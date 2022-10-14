@@ -8,6 +8,8 @@ class TestCase extends \Orchestra\Testbench\TestCase
     {
         return [
             \LPDFBuilder\ServiceProvider::class,
+            \LPDFBuilder\Tests\Fixtures\TestServiceProvider::class,
+            \Barryvdh\Snappy\ServiceProvider::class,
         ];
     }
 

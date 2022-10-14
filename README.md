@@ -3,9 +3,9 @@
 ![Packagist License](https://img.shields.io/packagist/l/yaroslawww/laravel-pdf-builder?color=%234dc71f)
 [![Packagist Version](https://img.shields.io/packagist/v/yaroslawww/laravel-pdf-builder)](https://packagist.org/packages/yaroslawww/laravel-pdf-builder)
 [![Total Downloads](https://img.shields.io/packagist/dt/yaroslawww/laravel-pdf-builder)](https://packagist.org/packages/yaroslawww/laravel-pdf-builder)
-[![Build Status](https://scrutinizer-ci.com/g/yaroslawww/laravel-pdf-builder/badges/build.png?b=master)](https://scrutinizer-ci.com/g/yaroslawww/laravel-pdf-builder/build-status/master)
-[![Code Coverage](https://scrutinizer-ci.com/g/yaroslawww/laravel-pdf-builder/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/yaroslawww/laravel-pdf-builder/?branch=master)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/yaroslawww/laravel-pdf-builder/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/yaroslawww/laravel-pdf-builder/?branch=master)
+[![Build Status](https://scrutinizer-ci.com/g/yaroslawww/laravel-pdf-builder/badges/build.png?b=main)](https://scrutinizer-ci.com/g/yaroslawww/laravel-pdf-builder/build-status/main)
+[![Code Coverage](https://scrutinizer-ci.com/g/yaroslawww/laravel-pdf-builder/badges/coverage.png?b=main)](https://scrutinizer-ci.com/g/yaroslawww/laravel-pdf-builder/?branch=main)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/yaroslawww/laravel-pdf-builder/badges/quality-score.png?b=main)](https://scrutinizer-ci.com/g/yaroslawww/laravel-pdf-builder/?branch=main)
 
 Wrapper for `snappy` and `fpdi` pdf generators. Allow quickly create different templates in laravel for MVP or
 production.
@@ -83,7 +83,6 @@ class UserCertificate extends AbstractDocumentFromImage
     protected function generate(): Fpdi
     {
         $pdf = new Fpdi();
-        $pdf = $this->design2($pdf, 'L');
 
         $pdf->SetAutoPageBreak(false);
         $pdf->AddPage('L', [85.6, 53]);
@@ -107,8 +106,29 @@ class UserCertificate extends AbstractDocumentFromImage
 
 ```php
 class CertificateController extends \App\Http\Controllers\Controller {
+
     function showCertificate(\Illuminate\Http\Request $request) {
         return (new UserCertificate($request->user))->inline();
+    }
+    
+    function showCertificate(\Illuminate\Http\Request $request) {
+        return (new UserCertificate($request->user))->download();
+    }
+  
+    function saveCertificate(\Illuminate\Http\Request $request) {
+        (new UserCertificate($request->user))->save();
+        
+        //...
+    }
+    
+    function sendInMail(\Illuminate\Http\Request $request) {
+        $message = (new MailMessage)
+            ->subject('User certificate.')
+            ->greeting('Hi!')
+            ->greeting('Certificate created.')
+            ->attach((new UserCertificate($request->user))->temporalFile());
+        
+        return $message;
     }
 }
 ```
