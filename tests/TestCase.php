@@ -29,6 +29,11 @@ class TestCase extends \Orchestra\Testbench\TestCase
             'prefix'   => '',
         ]);
 
+        $app['config']->set('filesystems.disks.pfd_templates', [
+            'driver' => 'local',
+            'root'   => storage_path('app/pfd_templates'),
+        ]);
+
         // $app['config']->set('pdf-builder.some_key', 'some_value');
     }
 }

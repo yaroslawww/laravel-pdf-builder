@@ -66,6 +66,8 @@ class UserCertificate extends AbstractDocumentFromHtml
 
 ### Using fpdi builder
 
+Raw example
+
 ```php
 <?php
 
@@ -97,6 +99,47 @@ class UserCertificate extends AbstractDocumentFromImage
         $pdf->SetXY(3, 6);
         $pdf->Cell(79.6, 3, Str::limit($this->user->name, 30, ''), 0, 1, 'C');
 
+        return $pdf;
+    }
+}
+```
+
+From template
+
+```php
+<?php
+
+use LPDFBuilder\Generation\AbstractDocumentFromTemplate;
+
+class UserCertificate extends AbstractDocumentFromTemplate
+{
+    protected ?string $sourceTemplateDisk = 'pfd_templates';
+    protected ?string $sourceTemplateName = 'example.pdf';
+    protected int $templatePageWidth      = 100;
+    protected int $templatePageHeight     = 297;
+    
+    protected User $user;
+
+    public function __construct(User $user)
+    {
+        $this->user = $user;
+    }
+
+    protected function applyContent(Fpdi $pdf, int $page = 1): Fpdi
+    {
+        $pdf->SetFont('Arial', 'B', 14);
+        $pdf->SetTextColor(51, 51, 51);
+        switch ($page) {
+            case 1:
+                $pdf->SetXY(5, 40);
+                $pdf->Cell(90, 10, 'Test name', 0, 1, 'C');
+                break;
+            case 2:
+                $pdf->SetXY(5, 40);
+                $pdf->Cell(90, 10, 'Other page data', 0, 1, 'L');
+                break;
+        }
+        
         return $pdf;
     }
 }
