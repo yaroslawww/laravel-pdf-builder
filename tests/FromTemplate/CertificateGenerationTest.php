@@ -53,4 +53,24 @@ class CertificateGenerationTest extends TestCase
         (new CertificateFromTemplate())->save(null, 'foo-bar', true);
         $this->assertTrue(Storage::exists('foo-bar.pdf'));
     }
+
+    /** @test */
+    public function change_template_name()
+    {
+        $this->expectException(\ErrorException::class);
+        $this->expectExceptionMessageMatches('/^.*pfd_templates\/example-foo.pdf\): Failed to open stream: No such file or directory$/');
+        (new CertificateFromTemplate())
+            ->setTemplate('example-foo.pdf')
+            ->save(null, 'foo-bar', true);
+    }
+
+    /** @test */
+    public function change_template_disk()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Disk [new_test] does not have a configured driver.');
+        (new CertificateFromTemplate())
+            ->setTemplateDisk('new_test')
+            ->save(null, 'foo-bar', true);
+    }
 }

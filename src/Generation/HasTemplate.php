@@ -10,6 +10,32 @@ trait HasTemplate
     protected ?string $sourceTemplateName = null;
 
     /**
+     * Specify template to use.
+     *
+     * @param string|null $sourceTemplateName
+     * @return $this
+     */
+    public function setTemplate(?string $sourceTemplateName = null): static
+    {
+        $this->sourceTemplateName = $sourceTemplateName;
+
+        return $this;
+    }
+
+    /**
+     * Specify template disk to use.
+     *
+     * @param string|null $sourceTemplateDisk
+     * @return $this
+     */
+    public function setTemplateDisk(?string $sourceTemplateDisk = null): static
+    {
+        $this->sourceTemplateDisk = $sourceTemplateDisk;
+
+        return $this;
+    }
+
+    /**
      * Get template storage disk.
      *
      * @return string|null
